@@ -1,13 +1,8 @@
 import sys
-import os
 import json
-import subprocess
 import csv
-from time import strftime
-import time
 from openpyxl import load_workbook
 from openpyxl.styles import Font
-from pythonping import ping
 import logging
 
 
@@ -20,7 +15,9 @@ else:
     print("Specify file.")
     exit()
 
-
+# Setup logging.
+logging.basicConfig(filename=logFile, level=logging.DEBUG)
+logging.getLogger().addHandler(logging.StreamHandler())
 
 def conditions(theValue, threshold, passMark, inequality=0):
     # Iterate through each value going into sheet.
