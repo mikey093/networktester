@@ -78,25 +78,22 @@ def toXL(filePrefix):
         ws['F{}'.format(i-1)] = '< {}'.format(thresholdsData['latency'])
         ws['G{}'.format(i-1)] = '< {}'.format(thresholdsData['packetLoss'])
         
-        # # Additional testing parameters.
-        # ws['O2'] = '{} seconds for each test.'.format(iperfTime)
-        # ws['O3'] = '{} Mb/s'.format(int(bandTCP)/1000)
-        # ws['O4'] = '{} Mb/s'.format(int(bandUDP)/1000)
-        # ws['O5'] = '{}'.format(iperfPort)
 
         # Project Info
-        ws['B3'] = proj['Serial Number']
-        ws['B4'] = proj['MAC Address']
-        ws['B6'] = proj['Location Name']
         ws['B7'] = proj['Engineer Name']
-        
-
         # ws['B5'] = configs['host']
 
         for row in results:
             passMark = 1
             ws['A{}'.format(i)] = i - 10
             ws['B{}'.format(i)] = row['Time']
+
+            # Additional testing parameters.
+            ws['B2'] = '{} seconds for each test.'.format(row['Test Seconds (s)'])
+            ws['B3'] = '{} Mb/s'.format(float(row['Test TCP Bandwidth (Mb/s)'])/1000)
+            ws['B4'] = '{} Mb/s'.format(float(row['Test UDP Bandwidth (Mb/s)'])/1000)
+            ws['B5'] = '{}'.format(row['Test iperf port'])
+
 
             # I think I've fucked this up.  It's so complex going through the conditions statement..
             try:

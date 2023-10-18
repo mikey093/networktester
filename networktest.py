@@ -221,6 +221,13 @@ def stressTest(jsonData, testNumber=1):
     except:
         latencyAvg = 'NA'
 
+
+        # # Additional testing parameters.
+        # ws['O2'] = '{} seconds for each test.'.format(iperfTime)
+        # ws['O3'] = '{} Mb/s'.format(int(bandTCP)/1000)
+        # ws['O4'] = '{} Mb/s'.format(int(bandUDP)/1000)
+        # ws['O5'] = '{}'.format(iperfPort)
+
     resultsDict = {
         'Local IP Address': localIP,
         'Server Address': iperfHost,
@@ -240,9 +247,12 @@ def stressTest(jsonData, testNumber=1):
         'Host CPU Utilisation (%)': hostCPU,
         'Remote CPU Utilisation (%)': remoteCPU,
         'Latency (ms)': latencyAvg,
-        'Comment': locationComment
+        'Comment': locationComment,
+        'Test Seconds (s)': iperfTime,
+        'Test TCP Bandwidth (Mb/s)': int(bandTCP)/1000,
+        'Test UDP Bandwidth (Mb/s)': int(bandUDP)/1000,
+        'Test iperf port': iperfPort
     }
-    # print(resultsDict)
     return resultsDict
 
 
