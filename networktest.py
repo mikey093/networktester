@@ -152,6 +152,7 @@ def stressTest(jsonData, testNumber=1):
     except KeyError:
         results = {}
         logging.info('Error - Did not successfully run TCP test')
+        logging.info('\nCheck iperf server is running and reachable\n')
         resultsDict = 0
 
     with open(iperfSaveFileUDP, 'r') as raw:
@@ -161,6 +162,7 @@ def stressTest(jsonData, testNumber=1):
     except KeyError:
         resultsUDP = {}
         logging.info('Error - Did not successfully run UDP test')
+        logging.info('\nCheck iperf server is running and reachable\n')
         resultsDict = 0
 
     try:
@@ -276,6 +278,6 @@ while x >= 1:
     To run report on these results, run the following:
                  
     report.exe -f {}
-    '''.format(projectFile))
+    '''.format(sys.argv[sys.argv.index("-f") + 1]))
     time.sleep(2)
     x = x - 1
