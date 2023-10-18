@@ -1,5 +1,4 @@
-# WoC-FAT
-Code used for the WoC FAT.
+# Network Tester
 
 ## Usage
 ```
@@ -15,12 +14,18 @@ Options:
 ```
 
 Example:
+```
+networktest.exe -b 10000 -u 10000 -h 127.0.0.1 -t 5 -p 8069 -n 1 -f levelY -c 'Next to Something'
+```
 
-With Python
+ - f: File name that CSV results are saved to.  This is useful to categorise tests.  i.e. Testing that occurred on a particular level on a particular day.
+ - c: Comment of the single test.  Change this each time a test is run so that it can be identified.  More descriptive the better.
+ - b: TCP bandwidth used in the iperf test.
+ - u: UDP bandwidth used in the iperf test.
+ - t: Time that each test will run for.  So, total test time will be double this (1 test for UDP and 1 for TCP)
+ - n: Number of times to run tests at a location.  More tests you run, the more accurate the network's true performance can be measured.  But it takes longer.
+ - p: iperf server's port.  i.e. on the iperf server you would run something like:
+
 ```
-python stress.py -f latest -b 50000 -u 50000 -h 127.0.0.1 -t 10 -p 8071 -n 1
-```
-With .exe
-```
--b 10000 -u 10000 -h 127.0.0.1 -t 5 -p 8069 -n 1 -f levelY -c 'Next to Something
+iperf3.exe -s -p 8069
 ```
