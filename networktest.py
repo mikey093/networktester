@@ -5,8 +5,6 @@ import subprocess
 import csv
 from time import strftime
 import time
-from openpyxl import load_workbook
-from openpyxl.styles import Font
 from pythonping import ping
 import logging
 
