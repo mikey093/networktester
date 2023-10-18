@@ -73,7 +73,7 @@ if("-c" in sys.argv):
 else:
     locationComment = ''
 
-# Setup logging.  
+# Setup logging.
 logging.basicConfig(filename=logFile, level=logging.DEBUG)
 logging.getLogger().addHandler(logging.StreamHandler())
 
@@ -91,7 +91,8 @@ No. of Tests: {}
 '''.format(projectFile, bandTCP, bandUDP, iperfHost, iperfPort, iperfTime, numTests)
 
 # print(testSettings)
-logging.info('Test settings at {}: {}'.format(time.strftime("%d/%m/%Y %X"), testSettings))
+logging.info('Test settings at {}: {}'.format(
+    time.strftime("%d/%m/%Y %X"), testSettings))
 
 
 def toCSV(resultsDict):
@@ -115,6 +116,7 @@ def toCSV(resultsDict):
             writer = csv.DictWriter(
                 outFile, fieldnames=headerOfCSV, dialect='excel')
             writer.writerow(resultsDict)
+
 
 def stressTest(jsonData, testNumber=1):
     iperfSaveFileTCP = 'results/TCP-{}.json'.format(testNumber)
@@ -199,6 +201,11 @@ def stressTest(jsonData, testNumber=1):
             'Lost Packets (%)': resultsUDP['lost_percent'],
             'Packets Out of Order': resultsUDP['out_of_order']
         }
+        logging.info('UDP Bandwidth: {}'.format(
+            round(resultsUDP['bits_per_second'] * (1e-6), 2)))
+        logging.info('Lost Packets (%): {}'.format(
+            resultsUDP['lost_percent'])),
+        logging.info('Jitter (ms): {}'.format(resultsUDP['jitter_ms']))
     except KeyError:
         udpResults = {
             'UDP Bandwidth (Mb/s)': 'NA',
@@ -213,14 +220,13 @@ def stressTest(jsonData, testNumber=1):
     try:
         RTT_ms = results['max_rtt'] * (1e-3)
     except:
-        logging.info('RTT Error.')
+        # logging.info('RTT Error.')
         RTT_ms = 'NA'
     try:
         pingResults = ping(iperfHost, size=40, count=10)
         latencyAvg = pingResults.rtt_avg_ms
     except:
         latencyAvg = 'NA'
-
 
         # # Additional testing parameters.
         # ws['O2'] = '{} seconds for each test.'.format(iperfTime)
@@ -266,5 +272,10 @@ while x >= 1:
     resultsDict = stressTest(jsonData)
     toCSV(resultsDict)
     print('---------------------------')
+    logging.info('''
+    To run report on these results, run the following:
+                 
+    report.exe -f {}
+    '''.format(projectFile))
     time.sleep(2)
     x = x - 1
