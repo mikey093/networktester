@@ -1,0 +1,7 @@
+{"host": "127.0.0.1", 
+    "time": 5,
+    "bandwidth": 500000, 
+    "UDPbandwidth": 500000, 
+    "port": 8071,
+    "numTests": 3
+}

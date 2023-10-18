@@ -1,0 +1,5 @@
+{"TCPbandwidth": 2,
+ "UDPbandwidth": 2,
+ "jitter": 20,
+ "latency": 30,
+ "packetLoss": 1}
