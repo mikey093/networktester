@@ -35,12 +35,6 @@ This file is appended to each time the script is run with that file name.
 Similarly, log file regarding that file name is saved in the log folder.
 A report can be run on the contents of this csv file with the report script outlined below.
 
-```
-iperf3.exe -s -p 8069
-```
-Download iperf from here: https://iperf.fr/download/windows/iperf-3.1.3-win64.zip
- - Use this iperf for both server and client.
-
 # Report
 
 
@@ -54,3 +48,13 @@ report.exe -f levelY
 
 Report is saved in the results folder with .xlsx extension and can be opened in Excel.
 Thresholds of each parameter can be set in the config folder, thresholds.json file.
+
+# Server
+An iperf server must be setup for the network tester to test against.  The server must be on the same VLAN of the network to be tested.  Suggest pinging the server to verify connectivity before doing a network test.  
+Ensure the port in the network tester command is the same as the server's port, -p setting.
+
+```
+iperf3.exe -s -p 8069
+```
+Download iperf from here: https://iperf.fr/download/windows/iperf-3.1.3-win64.zip
+ - Use this iperf for both server and client.

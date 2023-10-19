@@ -1,6 +1,5 @@
 results/*
 *.log
-iperf3.exe
 dist
 build
 __pycache__
