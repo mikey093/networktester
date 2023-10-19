@@ -1,4 +1,6 @@
-results/*
+*.csv
+*json
+*xlsx
 *.log
 dist
 build
