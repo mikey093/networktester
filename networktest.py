@@ -12,23 +12,26 @@ import logging
 with open('config/testConfig.json', 'r') as file:
     jsonData = json.load(file)
 
+version = open('VERSION.txt', 'r').read()
 
 usage = '''
 Usage: 
-stress.py [Options]
-Options:
--f [File Name] 
+-f [File Name]* 
+-h [Iperf Server IP Address]* 
 -b [TCP bandwidth(kb/s)] 
 -u [UDP bandwidth(kb/s)] 
--h [Iperf Server IP Address] 
 -t [time of test (sec)] 
 -p [Port for Iperf]
 -n [No. of Tests]
 -c [Comment of location]
 
 Example:
-stress.exe -b 10000 -u 10000 -h 127.0.0.1 -t 5 -p 8069 -n 1 -f levelX -c 'at stockpile'
+networktest.exe -f levelX -h 127.0.0.1 -b 10000 -u 10000 -t 5 -p 8069 -n 1 -c 'at stockpile'
 '''
+
+if("-v" in sys.argv):
+    print('Version: {}'.format(version))
+    sys.exit(0)
 
 if("-f" in sys.argv):
     projectFile = 'results/{}'.format(
@@ -37,7 +40,7 @@ if("-f" in sys.argv):
 else:
     print(usage)
     print("Specify output file.")
-    exit()
+    sys.exit(0)
 if("-b" in sys.argv):
     bandTCP = sys.argv[sys.argv.index("-b") + 1]
 else:
@@ -50,22 +53,23 @@ if("-h" in sys.argv):
     iperfHost = sys.argv[sys.argv.index("-h") + 1]
 else:
     print(usage)
-    exit()
+    logging.info("Specify a host of iperf server.")
+    sys.exit(0)
 if("-p" in sys.argv):
     iperfPort = sys.argv[sys.argv.index("-p") + 1]
 else:
-    iperfPort = 8071
-    print("Setting iperf port to 8071")
+    iperfPort = 5021
+    print("Setting iperf port to 5201")
 if("-t" in sys.argv):
     iperfTime = sys.argv[sys.argv.index("-t") + 1]
 else:
     print(usage)
-    exit()
+    sys.exit(0)
 if("-n" in sys.argv):
     numTests = sys.argv[sys.argv.index("-n") + 1]
 else:
     print(usage)
-    exit()
+    sys.exit(0)
 if("-c" in sys.argv):
     locationComment = sys.argv[sys.argv.index("-c") + 1]
 else:
@@ -85,8 +89,9 @@ UDP bandwidth(kb/s): {},
 Iperf Server IP Address: {},
 Iperf Server port: {},
 time of test (sec): {},
-No. of Tests: {}
-'''.format(projectFile, bandTCP, bandUDP, iperfHost, iperfPort, iperfTime, numTests)
+No. of Tests: {},
+Version of networktest: {}
+'''.format(projectFile, bandTCP, bandUDP, iperfHost, iperfPort, iperfTime, numTests, version)
 
 # print(testSettings)
 logging.info('Test settings at {}: {}'.format(

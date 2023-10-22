@@ -5,6 +5,10 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 import logging
 
+version = open('VERSION.txt', 'r').read()
+if("-v" in sys.argv):
+    print('Version: {}'.format(version))
+    sys.exit(0)
 
 if("-f" in sys.argv):
     projectFile = 'results/{}'.format(
@@ -13,7 +17,7 @@ if("-f" in sys.argv):
 else:
     print(usage)
     print("Specify file.")
-    exit()
+    sys.exit()
 
 # Setup logging.
 logging.basicConfig(filename=logFile, level=logging.DEBUG)
