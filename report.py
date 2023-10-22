@@ -23,11 +23,12 @@ else:
 logging.basicConfig(filename=logFile, level=logging.DEBUG)
 logging.getLogger().addHandler(logging.StreamHandler())
 
+
 def conditions(theValue, threshold, passMark, inequality=0):
     # Iterate through each value going into sheet.
     # FF0000 = Red.
     # Must be a better way to do this..
-    
+
     if inequality == 1:
         if theValue > threshold:
             theFont = Font(color='00FF00')
@@ -50,7 +51,7 @@ def toXL(filePrefix):
     thresholdsFile = 'config/thresholds.json'
     csvFile = '{}.csv'.format(filePrefix)
     xlsxFile = '{}.xlsx'.format(filePrefix)
-    projectFile = 'config/projectInfo.json'
+    projectInfo = 'config/projectInfo.json'
 
     try:
         wb = load_workbook(filename=('config/template.xlsx'))
@@ -62,7 +63,7 @@ def toXL(filePrefix):
     ws = wb.active
     with open(thresholdsFile, 'r') as openFile:
         thresholdsData = json.load(openFile)
-    with open(projectFile, 'r') as projectInfo:
+    with open(projectInfo, 'r') as projectInfo:
         proj = json.load(projectInfo)
     with open(csvFile, 'r') as csv_input:
         results = csv.DictReader(csv_input)
@@ -78,7 +79,6 @@ def toXL(filePrefix):
         # ws['H{}'.format(i-1)] = '< {}'.format(thresholdsData['linkSpeed'])
         ws['F{}'.format(i-1)] = '< {}'.format(thresholdsData['latency'])
         ws['G{}'.format(i-1)] = '< {}'.format(thresholdsData['packetLoss'])
-        
 
         # Project Info
         ws['B7'] = proj['Engineer Name']
@@ -90,11 +90,11 @@ def toXL(filePrefix):
             ws['B{}'.format(i)] = row['Time']
 
             # Additional testing parameters.
-            ws['B2'] = '{} seconds for each test.'.format(row['Test Seconds (s)'])
-            ws['B3'] = '{} Mb/s'.format(float(row['Test TCP Bandwidth (Mb/s)'])/1000)
-            ws['B4'] = '{} Mb/s'.format(float(row['Test UDP Bandwidth (Mb/s)'])/1000)
+            ws['B2'] = '{} seconds for each test.'.format(
+                row['Test Seconds (s)'])
+            ws['B3'] = '{} Mb/s'.format(float(row['Test TCP Bandwidth (Mb/s)']))
+            ws['B4'] = '{} Mb/s'.format(float(row['Test UDP Bandwidth (Mb/s)']))
             ws['B5'] = '{}'.format(row['Test iperf port'])
-
 
             # I think I've fucked this up.  It's so complex going through the conditions statement..
             try:
@@ -124,8 +124,8 @@ def toXL(filePrefix):
             except ValueError:
                 ws['E{}'.format(i)] = row['Jitter (ms)']
                 ws['E{}'.format(i)].font = Font(color='FF0000')
-                passMark = 0            
-            
+                passMark = 0
+
             try:
                 ws['G{}'.format(i)] = float(row['Lost Packets (%)'])
                 ws['G{}'.format(i)].font, passMark = conditions(
@@ -133,8 +133,7 @@ def toXL(filePrefix):
             except ValueError:
                 ws['G{}'.format(i)] = row['Lost Packets (%)']
                 ws['G{}'.format(i)].font = Font(color='FF0000')
-                passMark = 0            
-
+                passMark = 0
 
             # Did this condition a bit different just to try.  If not a float it will go through conditions.  Probably better.
             if row['Latency (ms)'] == 'NA':
@@ -143,7 +142,6 @@ def toXL(filePrefix):
                 ws['F{}'.format(i)] = float(row['Latency (ms)'])
                 ws['F{}'.format(i)].font, passMark = conditions(
                     float(row['Latency (ms)']), thresholdsData['latency'], passMark)
-
 
             ws['H{}'.format(i)] = row['Comment']
 
@@ -158,8 +156,8 @@ def toXL(filePrefix):
     try:
         wb.save(xlsxFile)
     except PermissionError:
-        logging.error('Could not write to file.  Excel sheet is probably open.  Close and try again.')
-
+        logging.error(
+            'Could not write to file.  Excel sheet is probably open.  Close and try again.')
 
 
 toXL(projectFile)

@@ -3,14 +3,13 @@ import os
 import json
 import subprocess
 import csv
-from time import strftime
 import time
 from pythonping import ping
 import logging
 
 
 with open('config/testConfig.json', 'r') as file:
-    jsonData = json.load(file)
+    defaultParams = json.load(file)
 
 version = open('VERSION.txt', 'r').read()
 
@@ -18,8 +17,8 @@ usage = '''
 Usage: 
 -f [File Name]* 
 -h [Iperf Server IP Address]* 
--b [TCP bandwidth(kb/s)] 
--u [UDP bandwidth(kb/s)] 
+-b [TCP bandwidth(Mb/s)] 
+-u [UDP bandwidth(Mb/s)] 
 -t [time of test (sec)] 
 -p [Port for Iperf]
 -n [No. of Tests]
@@ -29,12 +28,15 @@ Example:
 networktest.exe -f levelX -h 127.0.0.1 -b 10000 -u 10000 -t 5 -p 8069 -n 1 -c 'at stockpile'
 '''
 
+testParams = {}
+testParams["version"] = version
+
 if("-v" in sys.argv):
     print('Version: {}'.format(version))
     sys.exit(0)
 
 if("-f" in sys.argv):
-    projectFile = 'results/{}'.format(
+    testParams["projectFile"] = 'results/{}'.format(
         sys.argv[sys.argv.index("-f") + 1])
     logFile = 'log/{}.log'.format(sys.argv[sys.argv.index("-f") + 1])
 else:
@@ -42,38 +44,37 @@ else:
     print("Specify output file.")
     sys.exit(0)
 if("-b" in sys.argv):
-    bandTCP = sys.argv[sys.argv.index("-b") + 1]
+    testParams["bandTCP"] = sys.argv[sys.argv.index("-b") + 1]
 else:
-    bandTCP = 10
+    testParams["bandTCP"] = defaultParams["TCPbandwidth"]
 if("-u" in sys.argv):
-    bandUDP = sys.argv[sys.argv.index("-u") + 1]
+    testParams["bandUDP"] = sys.argv[sys.argv.index("-u") + 1]
 else:
-    bandUDP = 1
+    testParams["bandUDP"] = defaultParams["UDPbandwidth"]
 if("-h" in sys.argv):
     iperfHost = sys.argv[sys.argv.index("-h") + 1]
 else:
     print(usage)
-    logging.info("Specify a host of iperf server.")
+    print("Specify a host of iperf server.")
     sys.exit(0)
 if("-p" in sys.argv):
-    iperfPort = sys.argv[sys.argv.index("-p") + 1]
+    testParams["iperfPort"] = sys.argv[sys.argv.index("-p") + 1]
 else:
-    iperfPort = 5021
-    print("Setting iperf port to 5201")
+    testParams["iperfPort"] = defaultParams["port"]
 if("-t" in sys.argv):
-    iperfTime = sys.argv[sys.argv.index("-t") + 1]
+    testParams["time"] = sys.argv[sys.argv.index("-t") + 1]
 else:
-    print(usage)
-    sys.exit(0)
+    testParams["time"] = defaultParams["time"]
 if("-n" in sys.argv):
-    numTests = sys.argv[sys.argv.index("-n") + 1]
+    testParams["numTests"] = sys.argv[sys.argv.index("-n") + 1]
 else:
-    print(usage)
-    sys.exit(0)
+    testParams["numTests"] = defaultParams["numTests"]
 if("-c" in sys.argv):
-    locationComment = sys.argv[sys.argv.index("-c") + 1]
+    testParams["locationComment"] = sys.argv[sys.argv.index("-c") + 1]
 else:
-    locationComment = ''
+    testParams["locationComment"] = ''
+
+print(testParams)
 
 # Setup logging.
 logging.basicConfig(filename=logFile, level=logging.DEBUG)
@@ -84,16 +85,15 @@ logging.getLogger().addHandler(logging.StreamHandler())
 testSettings = '''
 Settings for test:
 File Name: {},
-TCP bandwidth(kb/s): {},
-UDP bandwidth(kb/s): {},
+TCP bandwidth(Mb/s): {},
+UDP bandwidth(Mb/s): {},
 Iperf Server IP Address: {},
 Iperf Server port: {},
 time of test (sec): {},
 No. of Tests: {},
 Version of networktest: {}
-'''.format(projectFile, bandTCP, bandUDP, iperfHost, iperfPort, iperfTime, numTests, version)
+'''.format(testParams["projectFile"], testParams["bandTCP"], testParams["bandUDP"], iperfHost, testParams["iperfPort"], testParams["time"], testParams["numTests"], version)
 
-# print(testSettings)
 logging.info('Test settings at {}: {}'.format(
     time.strftime("%d/%m/%Y %X"), testSettings))
 
@@ -102,7 +102,7 @@ def toCSV(resultsDict):
     # Grab dictionary and put into CSV
     # print(resultsDict)
     headerOfCSV = list(resultsDict.keys())
-    csvFileOut = '{}.csv'.format(projectFile)
+    csvFileOut = '{}.csv'.format(testParams["projectFile"])
     # Look for file - If it doesn't exist, write header.
     # If file not found, append results.
     # This is still not opening in Excel properly..
@@ -126,21 +126,21 @@ def stressTest(jsonData, testNumber=1):
     iperfSaveFileUDP = 'results/UDP-{}.json'.format(testNumber)
 
     iperfCommandTCP = ('iperf3.exe -c {} -J -b {} -t {} -p {} > {}'.format(
-        iperfHost, int(bandTCP)*1000, iperfTime, iperfPort, iperfSaveFileTCP))
+        iperfHost, int(testParams["bandTCP"])*1000000, testParams["time"], testParams["iperfPort"], iperfSaveFileTCP))
 
     unlimited_iperfCommandUDP = ('iperf3.exe -c {} -u -J -b {} -t {} -p {} > {}'.format(
-        iperfHost, int(bandUDP)*1000, iperfTime, iperfPort, iperfSaveFileUDP))
+        iperfHost, int(testParams["bandUDP"])*1000000, testParams["time"], testParams["iperfPort"], iperfSaveFileUDP))
 
     try:
         subprocess.call(str(iperfCommandTCP), shell=True,
-                        timeout=int(iperfTime) + 2)
+                        timeout=int(testParams["time"]) + 2)
     except subprocess.TimeoutExpired as errorMessage:
         logging.info(errorMessage)
         resultsDict = 0
         return resultsDict
     try:
         subprocess.call(str(unlimited_iperfCommandUDP),
-                        shell=True, timeout=int(iperfTime) + 2)
+                        shell=True, timeout=int(testParams["time"]) + 2)
     except subprocess.TimeoutExpired as errorMessage:
         logging.info(errorMessage)
         resultsDict = 0
@@ -206,7 +206,7 @@ def stressTest(jsonData, testNumber=1):
             'Lost Packets (%)': resultsUDP['lost_percent'],
             'Packets Out of Order': resultsUDP['out_of_order']
         }
-        logging.info('UDP Bandwidth: {}'.format(
+        logging.info('UDP Bandwidth: {} Mb/s'.format(
             round(resultsUDP['bits_per_second'] * (1e-6), 2)))
         logging.info('Lost Packets (%): {}'.format(
             resultsUDP['lost_percent'])),
@@ -234,16 +234,16 @@ def stressTest(jsonData, testNumber=1):
         latencyAvg = 'NA'
 
         # # Additional testing parameters.
-        # ws['O2'] = '{} seconds for each test.'.format(iperfTime)
-        # ws['O3'] = '{} Mb/s'.format(int(bandTCP)/1000)
-        # ws['O4'] = '{} Mb/s'.format(int(bandUDP)/1000)
-        # ws['O5'] = '{}'.format(iperfPort)
+        # ws['O2'] = '{} seconds for each test.'.format(testParams["time"])
+        # ws['O3'] = '{} Mb/s'.format(int(testParams["bandTCP"])/1000)
+        # ws['O4'] = '{} Mb/s'.format(int(testParams["bandUDP"])/1000)
+        # ws['O5'] = '{}'.format(testParams["iperfPort"])
 
     resultsDict = {
         'Local IP Address': localIP,
         'Server Address': iperfHost,
         'Local Port': localPort,
-        'Server Port': iperfPort,
+        'Server Port': testParams["iperfPort"],
         'Time': timeNow,
         'Bandwidth (Mb/s)': bandwidth,
         'RTT (ms)': RTT_ms,
@@ -258,23 +258,23 @@ def stressTest(jsonData, testNumber=1):
         'Host CPU Utilisation (%)': hostCPU,
         'Remote CPU Utilisation (%)': remoteCPU,
         'Latency (ms)': latencyAvg,
-        'Comment': locationComment,
-        'Test Seconds (s)': iperfTime,
-        'Test TCP Bandwidth (Mb/s)': int(bandTCP)/1000,
-        'Test UDP Bandwidth (Mb/s)': int(bandUDP)/1000,
-        'Test iperf port': iperfPort
+        'Comment': testParams["locationComment"],
+        'Test Seconds (s)': testParams["time"],
+        'Test TCP Bandwidth (Mb/s)': int(testParams["bandTCP"]),
+        'Test UDP Bandwidth (Mb/s)': int(testParams["bandUDP"]),
+        'Test iperf port': testParams["iperfPort"]
     }
     return resultsDict
 
 
-x = int(numTests)
+x = int(testParams["numTests"])
 while x >= 1:
     print('---------------------------')
     print('Running the following test:')
-    print('{} kb/s TCP and {} kb/s UDP to {} for {} seconds'.format(
-        bandTCP, bandUDP, iperfHost, iperfTime))
+    print('{} Mb/s TCP and {} Mb/s UDP to {}:{} for {} seconds'.format(
+        int(testParams["bandTCP"])/1000, int(testParams["bandUDP"])/1000, iperfHost, testParams["iperfPort"], testParams["time"]))
     print('---------------------------')
-    resultsDict = stressTest(jsonData)
+    resultsDict = stressTest(defaultParams)
     toCSV(resultsDict)
     print('---------------------------')
     logging.info('''
